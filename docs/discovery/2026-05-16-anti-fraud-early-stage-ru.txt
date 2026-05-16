@@ -1,0 +1,167 @@
+
+Anti-Fraud для Payment Gateway на раннем этапе
+
+При 150 карточных платежах в день сложный enterprise anti-fraud уровня Forter обычно не нужен.
+Для payment gateway на раннем этапе достаточно basic antifraud + хорошего acquiring + manual review.
+
+Важно понимать, что antifraud уже существует на нескольких уровнях инфраструктуры.
+
+1. Merchant antifraud
+Сам merchant может проверять:
+- user behavior;
+- account age;
+- suspicious orders.
+
+2. Gateway antifraud
+Слой gateway отвечает за:
+- pre-screening;
+- routing;
+- risk scoring;
+- merchant monitoring.
+
+3. Acquirer antifraud
+Банк-эквайер уже имеет:
+- fraud scoring;
+- velocity checks;
+- card network intelligence;
+- MCC monitoring.
+
+4. Issuer antifraud
+Банк клиента также проверяет:
+- customer behavior;
+- spending patterns;
+- geolocation;
+- PSD2 SCA;
+- ML-модели.
+
+Главная задача gateway на раннем этапе:
+- отсекать obvious fraud;
+- не допускать card testing;
+- держать chargeback ratio низким;
+- защищать отношения с acquirer.
+
+Команда anti-fraud при 150 tx/day
+
+На таком объёме полноценная fraud team не нужна.
+
+Обычно достаточно:
+- 0–1 dedicated fraud/risk person.
+
+Часто задачи выполняет:
+- founder;
+- CTO;
+- operations manager.
+
+Когда объём начинает расти, появляется:
+- 1 risk analyst.
+
+Что делает fraud analyst:
+- мониторит suspicious transactions;
+- анализирует chargebacks;
+- обновляет fraud rules;
+- следит за merchant activity;
+- проверяет alerts;
+- взаимодействует с acquiring partner.
+
+Что нужно автоматизировать в первую очередь
+
+1. Velocity Rules
+Примеры:
+- более 5 карт с одного IP за 10 минут;
+- более 10 declines за 5 минут;
+- слишком много транзакций на merchant;
+- слишком много BINs на одном устройстве.
+
+2. Geo Mismatch
+Проверять:
+- страну IP;
+- страну карты;
+- страну merchant.
+
+3. BIN Risk Analysis
+Проверять:
+- prepaid cards;
+- virtual cards;
+- risky issuers;
+- high-risk countries.
+
+4. Device Fingerprinting
+Даже basic fingerprinting помогает:
+- browser hash;
+- cookies;
+- user agent;
+- IP.
+
+5. VPN/TOR Detection
+Блокировать:
+- TOR;
+- datacenter IPs;
+- anonymous proxies.
+
+6. Merchant Monitoring
+Для payment gateway основной риск часто связан не с cardholder fraud, а с merchant abuse.
+
+Нужно отслеживать:
+- резкий рост volume;
+- suspicious MCC behavior;
+- unusually high declines;
+- chargeback spikes.
+
+Почему не стоит делать сложный anti-fraud сразу
+
+Сложный ML-based antifraud требует:
+- большого объёма данных;
+- тысяч chargeback examples;
+- labeled fraud history;
+- ML engineers;
+- data infrastructure.
+
+При 150 tx/day данных недостаточно для эффективного ML.
+
+Минимальный production-ready antifraud:
+- velocity rules;
+- blacklist;
+- geo checks;
+- BIN analysis;
+- basic device fingerprinting;
+- 3DS orchestration;
+- dashboard monitoring;
+- manual review queue.
+
+Практический roadmap
+
+Stage 1 — 150 tx/day
+Нужно:
+- basic antifraud rules;
+- manual review;
+- 3DS;
+- 1 ops/risk person максимум.
+
+Stage 2 — 1k–5k tx/day
+Добавляются:
+- device fingerprinting;
+- merchant scoring;
+- automated alerts;
+- stronger risk engine.
+
+Stage 3 — 10k+ tx/day
+Появляются:
+- fraud team;
+- ML models;
+- streaming analytics;
+- graph analysis;
+- advanced behavioral systems.
+
+Итог
+
+Для early-stage payment gateway сложный enterprise antifraud обычно не нужен.
+
+Наиболее эффективный подход:
+- strong acquiring partner;
+- basic rule engine;
+- merchant monitoring;
+- manual review;
+- 3DS;
+- operational discipline.
+
+Это позволяет получить большую часть результата при минимальной сложности и затратах.

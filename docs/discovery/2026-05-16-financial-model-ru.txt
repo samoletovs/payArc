@@ -1,0 +1,140 @@
+
+Обновлённая финансовая модель Payment Gateway
+
+Исходные данные
+
+Объём:
+- 300 карточных платежей в день
+- Средний чек: €100
+
+GMV (оборот платежей)
+
+В день:
+300 × €100 = €30,000/day
+
+В месяц:
+€30,000 × 30 ≈ €900,000/month
+
+В год:
+€900,000 × 12 = €10,800,000/year
+
+Доход gateway
+
+Merchant fee:
+6%
+
+Эквайрер:
+3%
+
+Маржа gateway:
+6% − 3% = 3% net margin
+
+Revenue gateway
+
+В месяц:
+€900,000 × 3% = €27,000/month
+
+В год:
+€10.8M × 3% = €324,000/year
+
+Payroll расходы
+
+Команда:
+3 сотрудника
+
+Зарплата:
+€3,000 gross/month
+
+Gross payroll:
+€3,000 × 3 = €9,000/month
+
+Налоги работодателя в Латвии:
+≈ 24%
+
+Full payroll cost:
+€9,000 × 1.24 ≈ €11,160/month
+
+В год:
+€11,160 × 12 ≈ €133,920/year
+
+Операционные расходы
+
+Оставляем:
+- AWS / infrastructure ≈ €1,000/month
+- Accounting / legal ≈ €700/month
+
+Total OPEX:
+≈ €1,700/month
+
+В год:
+≈ €20,400/year
+
+Общие yearly expenses
+
+Payroll:
+~€133,920
+
+Infrastructure + legal:
+~€20,400
+
+Total expenses:
+~€154,320/year
+
+Финансовый результат
+
+Annual GMV:
+€10.8M
+
+Gateway revenue:
+€324k
+
+Total expenses:
+~€154k
+
+Operating profit:
+~€170k/year
+
+Monthly economics
+
+Monthly revenue:
+~€27k
+
+Monthly expenses:
+~€12.9k
+
+Monthly operating profit:
+~€14.1k
+
+EBITDA margin
+
+€170k / €324k ≈ 52% operating margin
+
+Важные нюансы
+
+Модель пока не учитывает:
+- chargebacks / fraud losses;
+- rolling reserves;
+- refunds / disputes ops;
+- compliance escalation;
+- PSP downtime / failed payments.
+
+Практический вывод
+
+При:
+- 300 tx/day,
+- €100 average ticket,
+- 6% merchant fee,
+- lean team из 3 человек,
+
+payment gateway уже может быть прибыльным.
+
+Что делает модель прибыльной:
+- higher spread;
+- lean operations;
+- small fixed costs;
+- отсутствие собственного acquiring и лицензирования.
+
+Это похоже на lightweight payment orchestration / reseller model, где:
+- acquiring делает партнёр;
+- risk partially externalized;
+- компания владеет merchant relationships, onboarding, routing и support.

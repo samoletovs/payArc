@@ -1,0 +1,188 @@
+
+Как Payment Gateway пересылает информацию эквайреру
+
+Payment gateway обычно пересылает информацию эквайреру в виде:
+- API-запросов;
+- ISO 8583 сообщений;
+- либо через процессинговые/card network протоколы.
+
+Формат зависит от:
+- уровня интеграции;
+- acquirer/processor;
+- card scheme;
+- архитектуры gateway.
+
+Для merchant gateway обычно выглядит как:
+- REST API;
+- HTTPS;
+- JSON payload.
+
+Но внутри payment ecosystem большинство карточных транзакций в итоге проходят через ISO 8583 или proprietary financial messaging protocols.
+
+Типичная архитектура
+
+1. Merchant → Gateway
+Merchant отправляет запрос через HTTPS API.
+
+Пример JSON payload:
+
+{
+  "amount": 10000,
+  "currency": "EUR",
+  "card": {
+    "pan": "4111111111111111",
+    "exp_month": "12",
+    "exp_year": "2028",
+    "cvv": "123"
+  }
+}
+
+2. Gateway → Acquirer
+
+Возможны несколько вариантов.
+
+Вариант 1 — REST/JSON API
+
+Наиболее популярный современный подход.
+
+Gateway вызывает:
+- HTTPS API;
+- JSON/XML payload.
+
+Так работают многие современные processors и acquirers:
+- Stripe;
+- Adyen;
+- Checkout.com;
+- Nuvei;
+- Rapyd.
+
+Вариант 2 — ISO 8583
+
+ISO 8583 — основной legacy financial messaging standard карточной индустрии.
+
+Используется:
+- Visa;
+- Mastercard;
+- acquiring processors;
+- issuing processors;
+- ATM networks.
+
+Сообщение ISO 8583 содержит:
+- MTI (message type indicator);
+- bitmap;
+- data elements.
+
+Пример упрощённого ISO 8583 сообщения:
+
+MTI: 0100
+DE2: 4111111111111111
+DE4: 000000010000
+DE7: 0516142230
+DE11: 123456
+DE49: 978
+
+Основные поля:
+
+DE2 — PAN (номер карты)
+DE3 — Processing code
+DE4 — Amount
+DE7 — Timestamp
+DE11 — STAN
+DE14 — Expiry
+DE22 — POS entry mode
+DE41 — Terminal ID
+DE49 — Currency
+
+Роль Gateway
+
+Gateway:
+- получает modern API request;
+- нормализует данные;
+- выполняет fraud checks;
+- делает routing;
+- токенизирует PAN;
+- мапит данные в формат acquirer/processors;
+- отправляет downstream.
+
+По сути gateway является translation layer между merchant API и банковской инфраструктурой.
+
+Proprietary Protocols
+
+Некоторые acquirers используют:
+- собственные TCP protocols;
+- XML APIs;
+- SOAP;
+- host-to-host integrations.
+
+Особенно это характерно для:
+- legacy banks;
+- старых процессинговых систем.
+
+Типичный production flow
+
+1. Merchant API request (JSON/HTTPS)
+2. Gateway processing:
+   - tokenize card;
+   - fraud checks;
+   - routing;
+   - idempotency;
+   - risk scoring.
+3. Gateway → Acquirer:
+   - ISO 8583;
+   - либо acquirer-specific API.
+4. Card network (Visa/Mastercard rails)
+5. Issuer authorization
+
+Tokenization и безопасность
+
+Современные системы редко передают PAN «в открытом виде».
+
+Используются:
+- network tokens;
+- vault tokens;
+- surrogate IDs.
+
+Безопасность обеспечивается через:
+- TLS 1.2+;
+- HSM encryption;
+- PCI DSS;
+- point-to-point encryption;
+- MAC/signatures.
+
+Authorization vs Settlement
+
+Authorization flow:
+- realtime approve/decline.
+
+Settlement flow:
+- clearing;
+- funding;
+- reconciliation.
+
+Settlement часто выполняется:
+- batch processing;
+- SFTP files;
+- clearing files;
+- settlement batches.
+
+Что используют early-stage gateways
+
+На раннем этапе gateway обычно:
+- принимает REST/JSON API;
+- отправляет REST/XML API в acquirer;
+- не работает напрямую с ISO 8583.
+
+ISO 8583 обычно требуется только если компания:
+- становится acquirer;
+- строит direct processor integration;
+- делает issuer processing;
+- строит собственные payment rails.
+
+Практический вывод
+
+На раннем этапе payment gateway обычно работает как API abstraction layer:
+- merchant → JSON/HTTPS;
+- gateway → acquirer API;
+- acquirer/processors → card network protocols.
+
+Но внутри card ecosystem большинство карточных транзакций в итоге проходят через ISO 8583-based financial messaging somewhere downstream.

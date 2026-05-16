@@ -1,12 +1,46 @@
+# Generic — stack-specific entries will be added once docs/plan.md picks a stack.
+
+# Env / secrets
+.env
+.env.local
+.env.*.local
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# Logs
+*.log
+logs/
+
+# Test output
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+.playwright-mcp/
+
+# Build / dependency artifacts (covers most stacks)
 node_modules/
 dist/
 build/
-.env
-.env.local
-*.log
-.DS_Store
+out/
 .vite/
-coverage/
-.playwright-mcp/
-playwright-report/
-test-results/
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+target/
+bin/
+obj/
+
+# Scratch (move materials into docs/discovery/, do not commit ad-hoc scratch)
+temp/
+scratch/
