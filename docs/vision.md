@@ -235,6 +235,49 @@ The discovery phase produces:
    (per Sam's financial model — needs validation against real chargeback /
    rolling-reserve / PSP-downtime data)
 
+## Validation against external research (2026-05-16)
+
+After web research across primary sources
+([`discovery/2026-05-16-web-research-synthesis.md`](discovery/2026-05-16-web-research-synthesis.md)),
+several elements of the original framing are confirmed and a few are
+adjusted:
+
+### ✅ Confirmed
+
+- PayFac-orchestrator framing (not full acquirer)
+- REST/JSON to acquirer for v1, no ISO 8583
+- Tokenization outsourced to vault (Basis Theory / VGS class)
+- Anti-fraud staged with volume; merchant-abuse is the dominant risk early
+- AI-native angles in onboarding/routing/fraud are real and underserved
+
+### ⚠️ Adjusted
+
+- **6% merchant fee is not viable for generic merchants.** Stripe's EU
+  rate is ~1.5% + €0.25. The 6% model only holds in (a) high-risk
+  verticals, (b) sub-€10 micro-merchants Stripe rejects, or (c) vertical
+  SaaS bundles. **payArc v1 must commit to one vertical.**
+- **Unmodeled costs ~€60–100k/yr**: rolling reserves (~€450k working
+  capital locked at €10.8M GMV), PCI compliance audit, vault per-tx,
+  3DS, cyber insurance. Tightens the lean P&L significantly.
+- **Chargeback ratio is the hardest constraint** at small scale —
+  ≤0.9–1% before Visa/MC fines kick in.
+- **Orchestration space is crowded with Visa-backed unicorns** (Stripe,
+  Adyen, Checkout.com, Gr4vy, Primer, Spreedly, VGS, Basis Theory). We
+  cannot win on raw orchestration. The edge must be vertical/geographic
+  focus or AI-native research-grade differentiation (likely both).
+- **License posture**: start as a PayFac under a partner acquirer/EMI's
+  umbrella — no own license needed. If we scale, the path is PI license
+  via Latvijas Banka. PSD3 (~2026–2027) may shift thresholds; don't
+  lock-in early.
+
+### 🆕 New decisions baked into the plan
+
+- **Vertical-first**, not horizontal-generic
+- **Vault from day one** (Basis Theory or VGS)
+- **3DS2 from day one** (acquirer-bundled or specialist; not in-house)
+- **Open-source the gateway core** as a research artifact — the only
+  asymmetry a 3-person team can build against Stripe's machine.
+
 ## Source materials
 
 Raw research, articles, and notes Sam shares are stored in

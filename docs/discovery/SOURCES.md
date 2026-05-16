@@ -161,3 +161,61 @@ Influenced: `vision.md` (concrete component breakdown — tokenization,
 fraud pipeline, decision branch, acquirer call), `questions.md` (opens:
 "build-vs-buy for tokenization vault?", "Forter vs in-house fraud
 heuristics — what's the budget threshold?").
+
+---
+
+## 2026-05-16 — Web research synthesis (competitors, regulation, PCI, economics)
+
+**Source:** [`2026-05-16-web-research-synthesis.md`](2026-05-16-web-research-synthesis.md)
+**Provided by:** Agent research; primary sources: Wikipedia (Payment_gateway,
+ISO_8583, Acquiring_bank, Payment_Services_Directive, Strong_customer_authentication,
+3-D_Secure), ECB (PSD2 explainer), Stripe (connect, docs.stripe.com/connect/onboarding),
+VGS, Basis Theory, Gr4vy, PCI SSC document library.
+
+Comprehensive market and regulatory landscape scan. Key findings, summarized:
+
+- **Architecture taxonomy**: Gateway / Processor / Acquirer / PayFac /
+  Orchestrator / Vault / Issuer / Card Network — the PayFac and Orchestrator
+  roles are converging fast.
+- **ISO 8583 not needed for v1** — confirmed; modern acquirers expose REST.
+  But model internal data structures around ISO 8583 concepts (MTI-like
+  message classes, response codes) to avoid being painted into a corner.
+- **Stripe Connect at scale**: 16,000+ platforms, 11M+ accounts, $1B+ on
+  104 platforms last year. Holds EMI license EU + MTL US so platforms
+  don't have to. Three onboarding modes (hosted / embedded / API). **This
+  is the canonical PayFac stack we're competing with.**
+- **Sam's 6% merchant fee is unrealistic for generic merchants** — Stripe's
+  EU rate is ~1.5% + €0.25. 6% is only viable in: (a) high-risk verticals
+  (gambling, crypto, adult, CBD, nutra), (b) sub-€10 micro-merchants
+  Stripe rejects, or (c) vertical SaaS where payments are bundled with
+  software. **Generic Baltic merchants = no economic moat against Stripe.**
+- **PSD2 in effect since 2018**; PSD3/PSR proposed June 2023, expected 2026–2027.
+  PayFacs either need a Payment Institution (PI) or Electronic Money
+  Institution (EMI) license, OR operate under another PI/EMI's umbrella.
+  Passporting works across EU/EEA once authorized in one member state.
+  Latvia regulator: FCMC / Latvijas Banka.
+- **PCI DSS v4.0.1** (current, since June 2024). The only economical path
+  is **SAQ-A** as a merchant (card data never touches our servers; vault
+  proxies for us). PayArc as a Service Provider = SAQ-D SP at level 4
+  initially (no QSA audit until ~1M tx/yr).
+- **Vault providers** (Basis Theory, VGS, Skyflow) carry the heavy PCI
+  Level 1 burden; we pay ~€0.05–0.15/tx + base. **Vault from day one** —
+  never touch raw PANs.
+- **3DS2 + SCA required by law** for EEA e-commerce. Use acquirer-bundled
+  3DS server or a specialist; don't build it.
+- **AI in payments** — fraud ML, smart retries, network tokens, account
+  updater are all commodity. Real differentiation room: conversational
+  KYB onboarding, explainable routing, merchant-behavior anomaly co-pilot,
+  agentic dispute response, agentic commerce.
+- **Unmodeled costs ~€60–100k/yr**: rolling reserves (5–10% of GMV held
+  for ~6 months = ~€450k locked up), PCI audit (€15k–€80k), chargebacks,
+  vault, 3DS, cyber insurance.
+- **Chargeback ratio sacred**: Visa/MC fines kick in above ~0.9–1%. At
+  150 tx/day that's ≤1.35 chargebacks/day. Single hardest constraint on
+  a small PayFac.
+
+Influenced: `vision.md` (added "Validation against research" section that
+flags the 6% assumption and recommends vertical-first scoping),
+`questions.md` (closed: ISO 8583 / scale / anti-fraud; opens new ones on
+vertical choice, vault vendor, license path, rolling-reserve negotiation),
+`plan.md` (entire plan is grounded in this synthesis).
