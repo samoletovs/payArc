@@ -1,7 +1,7 @@
 # payArc — Open Questions
 
-> Questions to be answered (by Sam or by further research) before the plan
-> is written. Updated 2026-05-16 after web research synthesis
+> Questions to be answered (by the team or by further research) before
+> the plan is written. Updated 2026-05-16 after web research synthesis
 > ([`discovery/2026-05-16-web-research-synthesis.md`](discovery/2026-05-16-web-research-synthesis.md)).
 
 ## Resolved (closed by discovery + web research)
@@ -26,20 +26,20 @@
 ## Open — Scope (highest priority — these gate the plan)
 
 - [ ] **🔥 Which vertical?** Research shows generic Baltic merchants =
-  no economic moat against Stripe. Candidates ranked by Sam's existing
-  ecosystem fit:
-  - **Vertical SaaS embedding** (payments inside era / turgo / future
-    SaaS) — easiest, defensible, but tiny initial volume
+  no economic moat against Stripe. Candidate verticals:
+  - **Vertical SaaS embedding** (payments bundled inside a specific
+    SaaS) — easiest to defend, but tiny initial volume
   - **High-risk vertical** (crypto on-ramp, CBD, nutra) — high margin,
     high compliance burden, hard to acquire merchants ethically
   - **Baltic micro-merchants Stripe rejects** — feasible, but smallest TAM
-  - **Marketplaces / two-sided platforms** (turgo-class) — payArc as
-    the payment engine for marketplaces; aligns with NauroLabs ecosystem
+  - **Marketplaces / two-sided platforms** — payArc as the payment engine
+    for marketplaces; well-defined integration story
 - [ ] **Geography.** Latvia / Baltics / EU? Currency? PSD2 passporting
   changes this dramatically.
 - [ ] **Methods.** Cards only for v1? Apple Pay / Google Pay? Local APM?
-- [ ] **First real merchant.** turgo? era? An external pilot? Determines
-  the actual integration shape of v1.
+- [ ] **First real merchant.** A small in-house demo merchant app, an
+  external pilot, or a sandbox-only synthetic merchant? Determines the
+  actual integration shape of v1.
 
 ## Open — Acquirer & partnerships
 
@@ -66,28 +66,29 @@
 
 - [ ] **Merchant-monitoring co-pilot v1 shape.** Manual dashboard with
   rules + LLM-generated narrative summary, or a more agentic alert system?
-  This is one of NauroLabs's research bets — needs a concrete design.
+  This is one of the core research bets — needs a concrete design.
 - [ ] **Forter / Sift / Stripe Radar threshold.** What volume justifies
   the cost? Likely ~1k tx/day per the staged roadmap.
 
 ## Open — Architecture & stack
 
 - [ ] **Hosting.** Container Apps (most likely for an API-first service)
-  vs. Functions vs. AKS. See [`.github/PLATFORM.md`](../../.github/PLATFORM.md)
-  — payArc is off-path because SWA Free can't host a real API service.
+  vs. Functions vs. AKS. A static-site host is not sufficient — payArc
+  needs a long-running REST API surface.
 - [ ] **Database.** PostgreSQL (relational, strong consistency for ledger)
-  is the right choice over Cosmos despite the NauroLabs default.
+  is the right choice; Cosmos/NoSQL is the wrong primitive for double-entry
+  accounting and reconciliation.
 - [ ] **Async / events.** Service Bus for webhooks + retries.
 - [ ] **Secrets.** Managed Identity + Key Vault from day one.
 - [ ] **Observability.** App Insights + immutable audit log (append-only
-  storage or Cosmos with TTL=infinite + WORM).
+  storage or DB + WORM blob export).
 - [ ] **Language.** TypeScript (Node) or Python (FastAPI)? Both viable;
-  TypeScript aligns better with existing NauroLabs projects (era, turgo),
-  Python aligns with foundryLab / mindMe AI patterns.
+  TypeScript gives stronger types for a payments domain, Python is closer
+  to AI/agent tooling. Pick one and commit.
 
 ## Open — Operations
 
-- [ ] **Cost ceiling for the prototype.** Sam's €150/month Azure credit
+- [ ] **Cost ceiling for the prototype.** A tight Azure budget (~€150/mo)
   must cover compute + storage + monitoring. Likely OK at v1 scale.
 - [ ] **SLA targets.** Industry standard: <300ms auth, 99.95% uptime.
   Reasonable for v1 at single-region northeurope.
@@ -96,11 +97,12 @@
 - [ ] **Chargeback ops UI.** Pure manual at 150 tx/day, but the UI +
   evidence-collection flow needs to exist.
 
-## Open — NauroLabs angle
+## Open — Public artifact angle
 
 - [ ] **Publishable artifact.** Working open-source PayFac core +
   research write-up? Public benchmark dashboard? Whitepaper on
   AI-native onboarding?
-- [ ] **Cross-pollination with turgo / era.** Concrete: does turgo
-  switch to payArc for its v2 payments?
-- [ ] **Subdomain.** Decide in plan.md.
+- [ ] **Reference integration.** What is the first real (or realistic
+  demo) merchant application that exercises payArc end-to-end?
+- [ ] **Subdomain / DNS.** Decide in plan.md (likely deferred to M7
+  publication step).

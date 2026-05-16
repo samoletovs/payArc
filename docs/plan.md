@@ -1,17 +1,18 @@
 # payArc — Build Plan
 
-> Drafted 2026-05-16 by agent, grounded in Sam's 5 source materials and
+> Drafted 2026-05-16 by agent, grounded in 5 source materials in
+> [`discovery/`](discovery/) and the web research synthesis at
 > [`discovery/2026-05-16-web-research-synthesis.md`](discovery/2026-05-16-web-research-synthesis.md).
-> Awaiting Sam's review.
+> Awaiting team review.
 
 ## TL;DR
 
 payArc is a **lean, vertical-focused, AI-native PayFac/orchestrator**,
 not a generic Stripe competitor. v1 ships an open-source gateway core +
-a single embedded-payments integration for a NauroLabs internal merchant
-(turgo or era). Live cards are out of scope for v1; the proof is **end-to-end
-flow against a sandbox acquirer**, exercising the AI-native onboarding and
-routing layers that are the actual research bets.
+a single sandbox merchant integration (a demo merchant app built
+alongside the gateway). Live cards are out of scope for v1; the proof is
+**end-to-end flow against a sandbox acquirer**, exercising the AI-native
+onboarding and routing layers that are the actual research bets.
 
 ---
 
@@ -34,8 +35,8 @@ routing layers that are the actual research bets.
 - **Webhook delivery** to merchants (auth/capture/fail events).
 - **Append-only audit log** of every state change.
 - **Open-source repo** with reproducible local-dev setup.
-- **One real internal merchant integration**: turgo or era checkout calls
-  payArc.
+- **One reference merchant integration**: a small demo merchant app
+  (or pilot merchant) calls payArc end-to-end.
 
 ### Out of scope for v1
 
@@ -58,11 +59,13 @@ routing layers that are the actual research bets.
 
 ### Vertical decision (carried over as an open question)
 
-Research showed a generic horizontal play loses to Stripe. The plan **assumes
-"NauroLabs ecosystem first"**: v1 ships against turgo or era as the first
-real merchant. The wider vertical question (high-risk, micro-merchants,
-vertical-SaaS) is deferred to v2 and gated on Sam's choice. v1 is the
-**technology + ecosystem proof**, not the commercial proof.
+Research showed a generic horizontal play loses to Stripe. v1 assumes
+**"technology proof first"**: ship a working sandbox PayFac with a
+reference demo merchant integration so the engineering, security, and
+AI hypotheses can be tested in isolation. The wider vertical question
+(high-risk, micro-merchants, vertical-SaaS, marketplaces) is deferred
+to v2 and gated on a deliberate vertical choice. **v1 is the technology
+proof, not the commercial proof.**
 
 ---
 
@@ -81,10 +84,11 @@ Concretely, v1 proves or disproves:
 2. **H2 (Explainability):** Every decline / 3DS challenge / route choice
    carries an LLM-generated human-readable explanation that an unskilled
    ops person can act on.
-3. **H3 (Cost):** The whole prototype fits in Sam's €150/mo Azure credit
-   while serving ≥100 tx/day on sandbox volume.
-4. **H4 (Ecosystem fit):** turgo or era can plug payArc in and replace
-   Stripe in <1 sprint.
+3. **H3 (Cost):** The whole prototype fits in a tight Azure budget
+   (~€150/mo) while serving ≥100 tx/day on sandbox volume.
+4. **H4 (Integration ergonomics):** A new merchant integration (custom
+   backend wiring payArc into a working checkout flow) takes
+   **<1 sprint** of focused work, end-to-end.
 
 Each hypothesis is a measurable lab outcome regardless of commercial fate.
 
@@ -135,7 +139,7 @@ Each hypothesis is a measurable lab outcome regardless of commercial fate.
        ┌───────────┴─────────┐   ┌─────────┴────────┐   ┌──────────────────────┐
        │ Basis Theory vault  │   │ Merchant         │   │ Merchant dashboard   │
        │ (Elements iframe;   │   │ backend          │   │ (read-only React)    │
-       │ card data never     │   │ (turgo / era)    │   │ Azure SWA            │
+       │ card data never     │   │ (demo merchant)  │   │ Azure SWA            │
        │ touches our srvrs)  │   └──────────────────┘   └──────────────────────┘
        └─────────────────────┘
                    ▲
@@ -169,17 +173,17 @@ Each hypothesis is a measurable lab outcome regardless of commercial fate.
 
 ## 4. Stack choice + rationale
 
-This is **explicitly off the NauroLabs [PLATFORM.md](../../.github/PLATFORM.md)
-golden path** for principled reasons. Deviations:
+This stack is chosen for principled reasons given the domain (API-first,
+security-heavy, async webhooks, real DB, secrets-heavy). Notable choices:
 
-| Concern | Golden path | payArc choice | Why deviate |
-|---------|-------------|---------------|-------------|
-| Hosting | Azure SWA Free | **Azure Container Apps** | SWA Free can't host a long-running REST API service with auth/fraud logic. ACA has scale-to-zero, managed-identity, custom domains. |
-| Auth | SWA built-in Entra ID | **Custom API keys + Entra for dashboard** | Merchant auth is API keys (industry standard); dashboard auth uses Entra. |
-| DB | Cosmos DB (default) | **PostgreSQL (Azure Flexible Server)** | Payments need strong consistency, joins, double-entry ledger discipline. Cosmos optimizes for global scale we don't need; relational + strict transactions is the correct primitive. |
-| Frontend | React + SWA | React + SWA | ✓ on path for the dashboard only. |
-| Secrets | SWA App Settings | **Key Vault + Managed Identity** | Acquirer credentials and vault API keys must be HSM-backed and rotatable. SWA App Settings are not appropriate. |
-| Lang | TS + Python | **TypeScript (Node 20 LTS)** | Aligns with era / turgo / amberRepublic. Strong types map well to payments domain. Python remains a strong runner-up if we need foundryLab integration. |
+| Concern | Choice | Why |
+|---------|--------|-----|
+| Hosting | **Azure Container Apps** | Long-running REST API service with auth/fraud logic, scale-to-zero, managed identity, custom domains. A static-site host (e.g. SWA Free) is not sufficient. |
+| Auth | **Custom API keys + Entra for dashboard** | Merchant auth is API keys (industry standard); dashboard auth uses Entra. |
+| DB | **PostgreSQL (Azure Flexible Server)** | Payments need strong consistency, joins, double-entry ledger discipline. NoSQL is the wrong primitive for reconciliation. |
+| Frontend | React + SWA (Free) | Read-only dashboard, static hosting is fine. |
+| Secrets | **Key Vault + Managed Identity** | Acquirer credentials and vault API keys must be HSM-backed and rotatable. |
+| Lang | **TypeScript (Node 20 LTS)** | Strong types map well to the payments domain; mature payment-SDK ecosystem; matches the team's expertise. Python (FastAPI) is a viable alternative if the team prefers. |
 
 **Per-component stack:**
 
@@ -195,8 +199,8 @@ golden path** for principled reasons. Deviations:
   Stripe Test Connect as fallback.
 - **3DS2**: bundled with acquirer.
 - **LLM**: Azure OpenAI (gpt-4o-mini class for explainability narration;
-  gpt-4o for onboarding agent reasoning). Use the existing foundryLab
-  patterns. Cost cap: $20/mo on Sam's subscription.
+  gpt-4o for onboarding agent reasoning). Cost cap: ~€20/mo on the
+  shared Azure subscription.
 - **Frontend dashboard**: React + Vite + TypeScript on Azure SWA Free
   (read-only; calls payArc API with Entra ID auth).
 - **Async/jobs**: Azure Service Bus (Basic tier, ~€10/mo) for webhook
@@ -221,7 +225,7 @@ golden path** for principled reasons. Deviations:
 | Azure OpenAI | gpt-4o-mini + small gpt-4o | 20 |
 | **Total** | | **~€87/mo** |
 
-Fits within the €150/mo Visual Studio Enterprise credit. ✓
+Fits within the available ~€150/mo Azure budget. ✓
 
 ---
 
@@ -366,23 +370,23 @@ warrants.
 
 ## 7. MVP slice (smallest end-to-end demoable thing)
 
-> **The demo**: A live React page (turgo checkout) where a buyer enters a
-> Visa test card, the request flows browser → vault → payArc → Checkout.com
-> sandbox → returns approved, the dashboard shows the transaction with an
-> LLM-narrated decision trail, and a webhook fires to turgo.
+> **The demo**: A live React page (a small demo merchant checkout)
+> where a buyer enters a Visa test card, the request flows browser →
+> vault → payArc → Checkout.com sandbox → returns approved, the
+> dashboard shows the transaction with an LLM-narrated decision trail,
+> and a webhook fires to the demo merchant.
 
 Concretely the MVP slice is:
 
-1. One merchant exists in the DB (turgo), pre-approved (KYB skipped for demo).
+1. One demo merchant exists in the DB, pre-approved (KYB skipped for demo).
 2. One API key issued for that merchant.
-3. Basis Theory Elements iframe rendered on turgo checkout page.
+3. Basis Theory Elements iframe rendered on the demo merchant checkout page.
 4. payArc `POST /payments` endpoint exists, accepting `{amount, currency,
    vaultToken, merchantId}`, returns `{paymentId, status}`.
 5. Decision engine has 3 hard-coded rules + LLM narrator.
 6. Acquirer adapter calls Checkout.com sandbox; returns auth result.
-7. Dashboard at `https://payarc-dash.naurolabs.com` shows the transaction
-   with narrative explanation.
-8. Webhook fires to turgo with the auth result.
+7. Dashboard shows the transaction with narrative explanation.
+8. Webhook fires to the demo merchant with the auth result.
 
 Anything beyond this is gated to a later milestone.
 
@@ -391,16 +395,16 @@ Anything beyond this is gated to a later milestone.
 ## 8. Milestones
 
 Each milestone has a **measurable done criterion**. Estimated effort in
-ideal-Sam-days (no calendar dates; pace is whatever pace).
+ideal-team-days (no calendar dates; pace is whatever pace).
 
 ### M0 — Foundation (idem)
 - ✅ Discovery docs complete (this state)
 - [ ] License chosen for the open-source repo (MIT recommended)
 - [ ] Threat model written (`docs/security/threat-model.md`)
-- [ ] Stack confirmed by Sam (see §4 above)
+- [ ] Stack confirmed by the team (see §4 above)
 - [ ] Vault vendor confirmed (Basis Theory vs VGS)
 - [ ] Sandbox acquirer confirmed (Checkout.com vs Stripe)
-- **Done when:** Sam approves this plan + answers the four ⬚ items above.
+- **Done when:** the team approves this plan + answers the four ⬚ items above.
 
 ### M1 — Skeleton (foundation code)
 - [ ] Monorepo scaffolded: `api/`, `dashboard/`, `infra/`, `sdk/`, `docs/`
@@ -452,20 +456,20 @@ ideal-Sam-days (no calendar dates; pace is whatever pace).
 - **Done when:** a merchant integrator can see every state change end-to-end
   with no DB access.
 
-### M6 — Real integration: turgo (or era) on payArc
-- [ ] turgo's checkout calls payArc instead of (its current placeholder /
-  Stripe)
+### M6 — Reference merchant integration
+- [ ] A small demo merchant app (or external pilot's checkout) calls
+  payArc instead of (a placeholder / Stripe)
 - [ ] One real sandbox transaction flows end-to-end
-- [ ] Webhook updates turgo's order state
-- **Done when:** turgo's E2E test passes against payArc sandbox.
+- [ ] Webhook updates the demo merchant's order state
+- **Done when:** the demo merchant's E2E test passes against payArc sandbox.
 
 ### M7 — Public artifact + write-up
-- [ ] Repo published under `samoletovs/payArc` (already exists; this is
-  the "make it public + linkable" step)
+- [ ] Repo made public + linkable (clear README, license, contribution guide)
 - [ ] README with quickstart (`docker compose up` for local dev)
 - [ ] Blog/whitepaper: "AI-native PayFac in <100kg LOC: what we learned"
-  on `naurolabs.com`
-- [ ] payarc.naurolabs.com landing page
+  on the team's chosen publication channel (repo README, public blog,
+  preprint server — decide at M7)
+- [ ] Public landing page (subdomain TBD — see §11)
 - **Done when:** an external developer can clone the repo, run it
   locally, and hit a sandbox auth in <15 min.
 
@@ -483,12 +487,12 @@ Distilled from the research synthesis. Severity = impact × likelihood at
 | R3 | LLM onboarding agent fails H1 (>10 min on average) | Medium | M4 done-criterion test fails | Iterate on prompts; fall back to form-based KYB with LLM only for review |
 | R4 | Costs creep past €150/mo Azure credit | Low | App Insights billing alert | Aggressive scale-to-zero; monthly cost report; switch to free tiers |
 | R5 | PostgreSQL chosen but Cosmos was right | Low | DB queries become awkward | Reversible in v1; schema is simple; PG → Cosmos migration cost <1 week |
-| R6 | Sam alone, no payments-industry deep contacts; can't sign a real acquirer in v2 | High | Cold outreach yields no response | Build for sandbox v1, use the public artifact + write-up to attract introductions for v2 |
+| R6 | Small team, no payments-industry deep contacts; can't sign a real acquirer in v2 | High | Cold outreach yields no response | Build for sandbox v1, use the public artifact + write-up to attract introductions for v2 |
 | R7 | Open-source becomes our moat — but also lets competitors copy | Low | n/a | Embrace it; the moat is the AI-native operational layer + brand, not the gateway code |
 | R8 | PSD3 lands during build and changes the rules | Medium | EU regulatory news monitoring | We hold no license in v1; impact is on v2 license path. Re-evaluate plan v2 at PSD3 entry into force |
 | R9 | Chargeback ratio spike when we go live in v2 | High (v2) | Visa Dispute Monitoring alert | Out of scope v1; named for v2 |
 | R10 | Vault/acquirer pricing makes unit economics unworkable | Medium | M2 cost-per-tx test against assumptions | Re-negotiate or re-pick vendor at M2 cost test |
-| R11 | turgo / era don't actually want payArc as a payment provider | Medium | M6 dropped or postponed | If neither, recruit an external pilot at M6; or pivot the demo to a synthetic merchant |
+| R11 | No willing reference merchant at M6 | Medium | M6 dropped or postponed | Build a synthetic demo merchant app inside the same repo; if external pilot lands later, swap |
 
 ---
 
@@ -508,42 +512,46 @@ M0–M3 but must be resolved before later milestones:
 5. **Merchant-monitoring co-pilot v1 shape** — manual dashboard with LLM
    narration (current plan) vs. agentic alerting system. (Blocks M5
    refinement.)
-6. **Cross-pollination contract** — does turgo or era commit to switching
-   to payArc, and what's the timeline? (Blocks M6.)
+6. **Reference integration timeline** — is the M6 reference merchant a
+   synthetic demo app, an external pilot, or both? (Blocks M6.)
 
 ---
 
 ## 11. Subdomain decision
 
-**Recommendation: register `payarc.naurolabs.com` at M1**, point at a
-GitHub Pages placeholder initially, switch to the SWA dashboard at M5.
+**Recommendation: defer the public subdomain decision to M7.**
 
-Rationale:
-- DNS propagation + SSL cert provisioning are slow; better to set up early.
-- Cost is zero (already a NauroLabs DNS zone).
-- Stable URL helps the open-source repo's README from day one.
+For v1 development and the sandbox demo, the Azure-provided URLs
+(`<app>.<region>.azurecontainerapps.io` for the API,
+`<app>.azurestaticapps.net` for the dashboard) are sufficient.
 
-**Do not** advertise the URL publicly until M7.
+The DNS / subdomain choice at M7 depends on where the project ends up
+hosted publicly — the team's own domain, a project-specific domain, or
+the open-source repo README acting as the primary public surface.
+
+**Action:** decide at the start of M7, after the open-source license
+and publication channel are picked.
 
 ---
 
-## 12. Done criteria for the lab experiment
+## 12. Done criteria for the experiment
 
-payArc as a NauroLabs experiment is **successful** if at the end of M7
+payArc as a research experiment is **successful** if at the end of M7
 **all four** of the following are true:
 
-1. **Working artifact**: a developer can clone `samoletovs/payArc`, run
+1. **Working artifact**: a developer can clone the repo, run
    `docker compose up`, and complete a sandbox transaction in under 15
    minutes. Demonstrates the "AI-native PayFac is buildable by 1–3
    people" claim.
 2. **Hypothesis evidence**: H1 (onboarding <10 min) and H2
    (explainability) are demonstrated with a recorded end-to-end demo.
-3. **Cross-pollination**: turgo or era runs at least one transaction
-   through payArc in sandbox. Proves NauroLabs ecosystem-fit.
-4. **Public write-up**: a blog post / paper on `naurolabs.com` documenting
+3. **Reference integration**: a reference merchant app (synthetic demo
+   or external pilot) runs at least one transaction through payArc in
+   sandbox. Proves integration ergonomics (H4).
+4. **Public write-up**: a blog post / paper / repo write-up documenting
    what worked, what didn't, and what we'd build differently.
 
-payArc is **a failed experiment** (but a valid lab outcome) if:
+payArc is **a failed experiment** (but a valid outcome) if:
 - After M3, the unit economics show no plausible vertical that survives
   the realistic ~€60–100k/yr unmodeled cost stack. We write up the
   finding and archive the repo. The research is still valuable.
@@ -553,5 +561,6 @@ payArc **graduates to a real business attempt (v2)** if:
 - A specific vertical is identified with willing pilot merchants AND
 - A path to a real acquirer (or umbrella) is concretely identified.
 
-Otherwise it stays a research artifact in the NauroLabs portfolio —
-exactly the role the lab is built for.
+Otherwise it stays a research artifact in the public repository —
+the project succeeded as a learning exercise, even if it does not
+graduate to a business.

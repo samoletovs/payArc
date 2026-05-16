@@ -42,7 +42,7 @@ look like PayFacs.
 
 ### Two business models inside payArc
 
-If we read Sam's sketch and financial model carefully:
+If we read the initial sketch and financial model carefully:
 
 - **PayFac model** = we're the master merchant; sub-merchants sign up under
   us; we onboard, monitor, take 3% spread, handle support. **More margin,
@@ -51,7 +51,7 @@ If we read Sam's sketch and financial model carefully:
   acquirer relationships; we add fraud/routing intelligence; charge per tx
   or % of volume. **Less margin (~0.1–0.5%), less risk.**
 
-Sam's 3% spread and 6% merchant fee strongly imply **PayFac**, not
+The initial 3% spread and 6% merchant fee strongly imply **PayFac**, not
 orchestration. This is a critical assumption to validate (see §8).
 
 ---
@@ -100,7 +100,7 @@ Source: stripe.com/connect + docs.stripe.com/connect
 - This is the **canonical PayFac stack** we are competing with.
 
 Stripe pricing in EU: typically **1.5% + €0.25 for EEA cards**, more for
-international cards. **Not 6%.** This is the central blow to Sam's
+international cards. **Not 6%.** This is the central blow to the initial
 financial model — see §8.
 
 ### Adyen
@@ -134,7 +134,7 @@ These are who payArc would partner with — not compete with.
   (Visa OnTheList partner).
 
 **Implication:** the orchestration space is **crowded with Visa-backed,
-well-funded incumbents.** Sam's lean 3-person team cannot out-engineer them
+well-funded incumbents.** A lean 3-person team cannot out-engineer them
 on raw orchestration. payArc's edge has to be either:
 (a) vertical/geographic focus (Baltic merchants Stripe doesn't bother with),
 or (b) AI-native onboarding/routing/fraud as a real differentiator.
@@ -296,7 +296,8 @@ include this) OR a specialist (Cardinal, Stripe Radar). Building our own
 | 5. Issuer antifraud | Customer behavior, ML | Out of our control |
 | 6. Vendor antifraud | Forter, Riskified, Stripe Radar, Signifyd | At higher volume |
 
-This confirms Sam's anti-fraud staging exactly: we start with Layer 2 rules
+This confirms the staged anti-fraud roadmap from the initial materials
+exactly: we start with Layer 2 rules
 + Layer 3 3DS2; add Layer 6 vendor only past a threshold.
 
 ### Chargeback ratio is sacred
@@ -345,13 +346,14 @@ From competitor blogs (Stripe, Gr4vy, VGS, Basis Theory):
 3. **Merchant-behavior anomaly co-pilot** — agent watching merchant
    patterns; raises issues in natural language before a chargeback storm.
 4. **Open-source the prototype** — almost nobody open-sources a working
-   PayFac. Doing so would build NauroLabs credibility.
+   PayFac. Doing so would build genuine research-grade credibility and
+   a defensible brand the way no closed product can.
 
 ---
 
-## 8. Economics — Sam's model, stress-tested
+## 8. Economics — the initial model, stress-tested
 
-Sam's financial model assumed:
+The initial financial model assumed:
 
 - 6% merchant fee, 3% acquirer cost, 3% gateway net spread.
 - 300 tx/day, €100 avg ticket, €10.8M GMV/yr → €324k revenue.
@@ -424,13 +426,13 @@ margin than the original model showed.
 | Rolling reserve choking cashflow | High | Negotiate hard; pick partners with shorter reserve periods (some EU acquirers do 1–3 months for low-risk merchants). |
 | Visa/MC reputation risk (high-risk vertical) | Medium | If we go HR vertical, the cost is real but normal there. |
 | Stripe-level competitor enters our niche | Medium | Move fast; build moat in onboarding UX. |
-| Sam alone, no payments-industry deep expertise yet | High | Ship docs/plan & MVP slowly; treat first 6 months as learning. |
+| Small team, no payments-industry deep expertise yet | High | Ship docs/plan & MVP slowly; treat first 6 months as learning. |
 
 ---
 
 ## 10. Decision posture — what this research changes
 
-**Confirmed (Sam's instincts were right):**
+**Confirmed (the original instincts were right):**
 - ✅ PayFac orchestrator framing, not full acquirer.
 - ✅ REST/JSON for v1, no ISO 8583.
 - ✅ Tokenization outsourced to vault.
@@ -444,7 +446,7 @@ margin than the original model showed.
 - ⚠️ ~€60–100k/yr unmodeled costs (rolling reserve cashflow, PCI audit,
   chargebacks, vault, 3DS, insurance) — the lean P&L is tighter than it
   looked.
-- ⚠️ Sam-alone (or 1-2 people) for early discovery is fine; the 3-person
+- ⚠️ A 1–2 person team for early discovery is fine; the 3-person
   budget kicks in once we have an acquirer signed.
 - ⚠️ PSD3 is coming (~2026–2027). Don't lock in license strategy yet.
 - ⚠️ The orchestration space is **crowded with Visa-backed unicorns**.

@@ -1,6 +1,6 @@
 # payArc — Discovery Materials
 
-This folder holds **raw source material** Sam shares about payment gateways:
+This folder holds **raw source material** about payment gateways:
 articles, specs, blog posts, screenshots, transcripts, notes, internal
 references — anything that informs the project.
 

@@ -10,7 +10,7 @@ Format:
 ## YYYY-MM-DD — <short title>
 
 **Source:** <filename or URL>
-**Provided by:** <Sam / agent research / etc.>
+**Provided by:** <project initiator / agent research / etc.>
 
 <one-paragraph takeaway>
 
@@ -22,7 +22,7 @@ Influenced: `vision.md` §<section>, `glossary.md` (added: …), `questions.md` 
 ## 2026-05-16 — Payment gateway description (Russian)
 
 **Source:** [`2026-05-16-payment-gateway-description-ru.txt`](2026-05-16-payment-gateway-description-ru.txt)
-**Provided by:** Sam, alongside the project creation request.
+**Provided by:** the project initiator, alongside the project creation request.
 
 A definition-grade overview of what a payment gateway is, the seven actors
 involved (cardholder, merchant, gateway, processor, acquirer, issuer, card
@@ -39,7 +39,7 @@ flow + security vocabulary).
 ## 2026-05-16 — Anti-fraud for an early-stage gateway (Russian)
 
 **Source:** [`2026-05-16-anti-fraud-early-stage-ru.txt`](2026-05-16-anti-fraud-early-stage-ru.txt)
-**Provided by:** Sam.
+**Provided by:** the project initiator.
 
 Pragmatic anti-fraud roadmap for a small payment gateway. Key claims:
 
@@ -69,7 +69,7 @@ little).
 ## 2026-05-16 — Financial model (Russian)
 
 **Source:** [`2026-05-16-financial-model-ru.txt`](2026-05-16-financial-model-ru.txt)
-**Provided by:** Sam.
+**Provided by:** the project initiator.
 
 Unit economics for a lean PayFac-style gateway:
 
@@ -98,7 +98,7 @@ rolling-reserve impact on cashflow?").
 ## 2026-05-16 — Gateway → acquirer integration formats (Russian)
 
 **Source:** [`2026-05-16-gateway-to-acquirer-formats-ru.txt`](2026-05-16-gateway-to-acquirer-formats-ru.txt)
-**Provided by:** Sam.
+**Provided by:** the project initiator.
 
 Technical reference for how the gateway talks downstream to acquirers /
 processors:
@@ -131,9 +131,9 @@ acquirer is sufficient).
 ## 2026-05-16 — High-level architecture sketch
 
 **Source:** [`2026-05-16-high-level-architecture.jpg`](2026-05-16-high-level-architecture.jpg)
-**Provided by:** Sam, hand-drawn sticky-note style diagram.
+**Provided by:** the project initiator, hand-drawn sticky-note style diagram.
 
-Sketch of the system Sam intends to build. Key signals:
+Sketch of the system the team intends to build. Key signals:
 
 - **Card brands feeding in on the left:** Mastercard, Visa, Apple Pay,
   Google Pay.
@@ -184,7 +184,7 @@ Comprehensive market and regulatory landscape scan. Key findings, summarized:
   104 platforms last year. Holds EMI license EU + MTL US so platforms
   don't have to. Three onboarding modes (hosted / embedded / API). **This
   is the canonical PayFac stack we're competing with.**
-- **Sam's 6% merchant fee is unrealistic for generic merchants** — Stripe's
+- **The 6% merchant fee is unrealistic for generic merchants** — Stripe's
   EU rate is ~1.5% + €0.25. 6% is only viable in: (a) high-risk verticals
   (gambling, crypto, adult, CBD, nutra), (b) sub-€10 micro-merchants
   Stripe rejects, or (c) vertical SaaS where payments are bundled with

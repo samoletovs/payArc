@@ -128,9 +128,9 @@ integrated into the backend of a product.
 For **business**: it is a monetization mechanism, a global payment-acceptance
 channel, and a cash-flow management tool.
 
-## NauroLabs framing
+## Project framing
 
-> Updated 2026-05-16 after processing Sam's initial materials in `discovery/`.
+> Updated 2026-05-16 after processing the initial materials in `discovery/`.
 
 payArc is being scoped as a **lean PayFac / payment orchestration
 business**, not an abstract research toy. The high-level architecture
@@ -152,7 +152,7 @@ We **do** intend to:
 - Optionally outsource heavy anti-fraud (Forter-style) only above a volume
   threshold
 
-### Target scale (per Sam's financial model)
+### Target scale (per the initial financial model)
 
 | Metric | Value |
 |---|---|
@@ -194,7 +194,7 @@ Per [`discovery/2026-05-16-gateway-to-acquirer-formats-ru.txt`](discovery/2026-0
 
 ### The "our part" perimeter
 
-From Sam's architecture sketch, the gateway internals are:
+From the architecture sketch, the gateway internals are:
 
 1. **Ingress** — Merchant calls `OUR PayFac API` (HTTPS + JSON)
 2. **Tokenization** — Encrypt card data, generate a token, store securely
@@ -206,10 +206,11 @@ From Sam's architecture sketch, the gateway internals are:
 6. **Response** — Propagate result back to the merchant
 7. **Supporting:** merchant dashboard, anti-fraud tool, ops console
 
-### NauroLabs research angles (where AI changes the game)
+### Research angles (where AI changes the game)
 
-Even though this is a real lean business, it is also a NauroLabs research
-experiment. Candidate AI-native bets to prove/disprove:
+Even though this is a real lean business, it is also run as a research
+experiment — hypothesis → prototype → measure → iterate or kill. Candidate
+AI-native bets to prove/disprove:
 
 1. **Agent-driven merchant onboarding** — compress weeks of manual KYB
    review into minutes via an LLM + structured-output pipeline
@@ -223,7 +224,7 @@ experiment. Candidate AI-native bets to prove/disprove:
 The discovery phase produces:
 - this `vision.md` (kept in sync as understanding deepens)
 - `docs/glossary.md` (domain terms)
-- `docs/questions.md` (open questions for Sam to answer)
+- `docs/questions.md` (open questions for the team to answer)
 - `docs/plan.md` (architecture & build plan — written at the END)
 
 ## Open hypotheses to test
@@ -232,8 +233,8 @@ The discovery phase produces:
 2. **Agent-driven merchant onboarding** can compress weeks to minutes
 3. **LLM fraud co-pilot** can outperform classical fraud rules on edge cases
 4. A lean 3-person PayFac orchestrator can hit ~50% EBITDA at €10.8M GMV
-   (per Sam's financial model — needs validation against real chargeback /
-   rolling-reserve / PSP-downtime data)
+   (per the initial financial model — needs validation against real
+   chargeback / rolling-reserve / PSP-downtime data)
 
 ## Validation against external research (2026-05-16)
 
@@ -280,6 +281,6 @@ adjusted:
 
 ## Source materials
 
-Raw research, articles, and notes Sam shares are stored in
+Raw research, articles, and notes shared by the team are stored in
 [`discovery/`](discovery/). The index lives in
 [`discovery/SOURCES.md`](discovery/SOURCES.md).
