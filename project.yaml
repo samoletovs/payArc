@@ -1,0 +1,14 @@
+name: payArc
+purpose: "Payment gateway research — agent-driven PayFac with smart routing and fraud co-pilot"
+users: "Merchants needing low-cost payment processing"
+stage: idea
+goals:
+  - "Agent-driven merchant onboarding (weeks to minutes)"
+  - "AI-native smart routing (acquirer choice + retry policy)"
+  - "LLM fraud co-pilot augmenting rules"
+  - "Merchant-abuse detection via agent monitoring"
+similar:
+  - "Stripe"
+  - "Adyen"
+  - "Wise"
+quality: []
