@@ -1,0 +1,24 @@
+name: Validate Alerts Config
+
+on:
+  push:
+    paths:
+      - ".github/automation/alerts.json"
+      - ".github/scripts/validate_alert_config.py"
+      - "README.md"
+  pull_request:
+    paths:
+      - ".github/automation/alerts.json"
+      - ".github/scripts/validate_alert_config.py"
+      - "README.md"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-alerts-config:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate alert config
+        run: python3 .github/scripts/validate_alert_config.py

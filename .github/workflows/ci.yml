@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+jobs:
+  discovery-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate discovery documents
+        run: |
+          set -euo pipefail
+          test -f README.md
+          test -f docs/vision.md
+          test -f docs/glossary.md
+          test -f docs/questions.md
+          test -f docs/discovery/SOURCES.md

@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "project_phase": "discovery",
+  "cooldown_hours": 24,
+  "alerts": [
+    {
+      "id": "discovery-docs-missing",
+      "kind": "required_files",
+      "severity": "high",
+      "files": [
+        "README.md",
+        "docs/vision.md",
+        "docs/glossary.md",
+        "docs/questions.md",
+        "docs/discovery/SOURCES.md"
+      ],
+      "issue_title": "[health] Discovery docs contract violated"
+    },
+    {
+      "id": "ci-failures",
+      "kind": "ci_recent_failures",
+      "severity": "high",
+      "window_hours": 24,
+      "issue_title": "[health] CI failures detected"
+    },
+    {
+      "id": "automation-blocked",
+      "kind": "action_required_runs",
+      "severity": "medium",
+      "window_hours": 24,
+      "issue_title": "[health] GitHub Actions blocked (manual action required)"
+    }
+  ]
+}
