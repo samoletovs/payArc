@@ -1,0 +1,200 @@
+name: Automation Health
+
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["CI", "Validate Alerts Config", "CI Auto-Remediation"]
+    types: [completed]
+
+permissions:
+  contents: read
+  issues: write
+  actions: read
+
+concurrency:
+  group: automation-health
+  cancel-in-progress: false
+
+jobs:
+  evaluate-and-dedupe-alerts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate alert config
+        run: python3 .github/scripts/validate_alert_config.py
+
+      - name: Evaluate alerts and sync deduped issues
+        uses: actions/github-script@v7
+        env:
+          CONFIG_PATH: .github/automation/alerts.json
+        with:
+          script: |
+            const fs = require('fs');
+            const path = process.env.CONFIG_PATH;
+            const cfg = JSON.parse(fs.readFileSync(path, 'utf8'));
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const now = new Date();
+            const cooldownMs = (cfg.cooldown_hours || 24) * 60 * 60 * 1000;
+
+            const openIssues = await github.paginate(github.rest.issues.listForRepo, {
+              owner, repo, state: 'open', labels: 'automation-alert', per_page: 100
+            });
+
+            async function findOrCreateLabel(name, color, description) {
+              try {
+                await github.rest.issues.getLabel({ owner, repo, name });
+              } catch (e) {
+                if (e.status === 404) {
+                  await github.rest.issues.createLabel({ owner, repo, name, color, description });
+                } else {
+                  throw e;
+                }
+              }
+            }
+
+            await findOrCreateLabel('automation-alert', 'B60205', 'Automated health/ops alerts');
+            await findOrCreateLabel('automation-alert:blocked', 'D4C5F9', 'Automation is blocked and needs manual action');
+
+            async function listRecentRuns(hours) {
+              const since = Date.now() - (hours * 60 * 60 * 1000);
+              const runs = await github.paginate(github.rest.actions.listWorkflowRunsForRepo, {
+                owner, repo, per_page: 100
+              });
+              return runs.filter(r => new Date(r.created_at).getTime() >= since);
+            }
+
+            function issueForAlert(alertId) {
+              return openIssues.find(i => i.labels?.some(l => l.name === `automation-alert:${alertId}`));
+            }
+
+            function parseCooldownUntil(body) {
+              if (!body) return null;
+              const match = body.match(/<!-- cooldown-until: (.+?) -->/);
+              if (!match) return null;
+              const dt = new Date(match[1]);
+              return Number.isNaN(dt.getTime()) ? null : dt;
+            }
+
+            async function upsertAlertIssue(alert, details, blocked=false) {
+              const label = `automation-alert:${alert.id}`;
+              const existing = issueForAlert(alert.id);
+              const cooldownUntil = existing ? parseCooldownUntil(existing.body || '') : null;
+              const body = [
+                `Automated alert \`${alert.id}\` is currently active.`,
+                '',
+                `- Severity: **${alert.severity}**`,
+                `- Observed at: ${now.toISOString()}`,
+                `- Cooldown: ${cfg.cooldown_hours || 24}h`,
+                '',
+                '### Details',
+                details,
+                '',
+                '<!-- managed-by: automation-health -->',
+                `<!-- alert-id: ${alert.id} -->`,
+                `<!-- cooldown-until: ${new Date(now.getTime() + cooldownMs).toISOString()} -->`
+              ].join('\n');
+
+              const labels = ['automation-alert', label];
+              if (blocked) labels.push('automation-alert:blocked');
+
+              await findOrCreateLabel(label, 'B60205', `Alert ${alert.id}`);
+
+              if (existing) {
+                if (cooldownUntil && now < cooldownUntil) {
+                  return { action: 'cooldown-skip', number: existing.number };
+                }
+                await github.rest.issues.update({
+                  owner, repo, issue_number: existing.number, title: alert.issue_title, body, labels
+                });
+                return { action: 'updated', number: existing.number };
+              }
+
+              const created = await github.rest.issues.create({
+                owner, repo, title: alert.issue_title, body, labels
+              });
+              return { action: 'created', number: created.data.number };
+            }
+
+            async function resolveAlertIssue(alertId, comment) {
+              const existing = issueForAlert(alertId);
+              if (!existing) return;
+              await github.rest.issues.createComment({
+                owner, repo, issue_number: existing.number, body: comment
+              });
+              await github.rest.issues.update({
+                owner, repo, issue_number: existing.number, state: 'closed'
+              });
+            }
+
+            for (const alert of cfg.alerts) {
+              let active = false;
+              let details = '';
+              let blocked = false;
+
+              if (alert.kind === 'required_files') {
+                const missing = (alert.files || []).filter(f => !fs.existsSync(f));
+                if (missing.length > 0) {
+                  active = true;
+                  details = `Missing required files:\n${missing.map(f => `- ${f}`).join('\n')}`;
+                }
+              }
+
+              if (alert.kind === 'ci_recent_failures') {
+                const runs = await listRecentRuns(alert.window_hours || 24);
+                const failed = runs.filter(r => r.conclusion === 'failure');
+                if (failed.length > 0) {
+                  active = true;
+                  details = [
+                    `Detected ${failed.length} failed run(s) in the last ${alert.window_hours || 24}h:`,
+                    ...failed.slice(0, 10).map(r => `- [${r.name} #${r.run_number}](${r.html_url}) @ ${r.head_sha.slice(0,7)}`)
+                  ].join('\n');
+                }
+              }
+
+              if (alert.kind === 'action_required_runs') {
+                const runs = await listRecentRuns(alert.window_hours || 24);
+                const candidateRuns = runs.filter(r => ['action_required', 'waiting', 'requested'].includes(r.status));
+                const blockedRuns = [];
+                for (const run of candidateRuns) {
+                  try {
+                    const jobs = await github.rest.actions.listJobsForWorkflowRun({
+                      owner,
+                      repo,
+                      run_id: run.id,
+                      per_page: 1
+                    });
+                    if ((jobs.data.total_count || 0) === 0) {
+                      blockedRuns.push(run);
+                    }
+                  } catch (e) {
+                    core.warning(`Failed to inspect jobs for run ${run.id}: ${e.message}`);
+                  }
+                }
+                if (blockedRuns.length > 0) {
+                  active = true;
+                  blocked = true;
+                  details = [
+                    `Detected ${blockedRuns.length} blocked run(s) with no jobs started (manual intervention required):`,
+                    ...blockedRuns.slice(0, 10).map(r => `- [${r.name} #${r.run_number}](${r.html_url}) status=${r.status}`),
+                    '',
+                    'Required manual action:',
+                    '- Open each run URL above',
+                    '- Review protection/policy prompt',
+                    '- Approve or adjust policy as required',
+                    '- Re-run the workflow once unblocked'
+                  ].join('\n');
+                }
+              }
+
+              if (active) {
+                const out = await upsertAlertIssue(alert, details, blocked);
+                core.info(`Alert ${alert.id}: issue ${out.action} #${out.number}`);
+              } else {
+                await resolveAlertIssue(alert.id, `Auto-resolved at ${now.toISOString()} — alert condition is no longer present.`);
+                core.info(`Alert ${alert.id}: no active condition`);
+              }
+            }
