@@ -39,7 +39,7 @@ def main() -> int:
     for issue in issues:
         labels = {l.get("name") for l in issue.get("labels", [])}
         unresolved += 1
-        if "automation-alert:automation-blocked" in labels:
+        if "automation-alert:blocked" in labels or "automation-alert:automation-blocked" in labels:
             blocked += 1
 
     denominator = max(unresolved + auto_fixed, 1)
