@@ -19,6 +19,6 @@ jobs:
   validate-alerts-config:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Validate alert config
         run: python3 .github/scripts/validate_alert_config.py
